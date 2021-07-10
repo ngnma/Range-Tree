@@ -1,0 +1,217 @@
+t java.util.*;
+
+public class Range2D {
+    public static void main(String[] args) {
+
+        ArrayList<NodeTree> mlist=new ArrayList<NodeTree>();
+        mlist.add(new NodeTree(3,5));
+        mlist.add(new NodeTree(2,7));
+        mlist.add(new NodeTree(7,2));
+        mlist.add(new NodeTree(5,8));
+        mlist.add(new NodeTree(1,1));
+        mlist.add(new NodeTree(9,3));
+        mlist.add(new NodeTree(6,6));
+        mlist.add(new NodeTree(11,7));
+        mlist.add(new NodeTree(2,2));
+        for(int i=0;i<mlist.size();i++){
+            mlist.get(i).children.add(mlist.get(i));
+            mlist.get(i).childrenroot.add(mlist.get(i));
+        }
+        Collections.sort(mlist,new mCompx());
+
+        NodeTree myTree=new NodeTree(mlist);
+
+        NodeTree head=myTree.set_head();
+        //System.out.println(head.x+" "+head.y);
+
+        ArrayList<NodeTree> test=new ArrayList();
+        head.f4(head,5,9,test);
+
+
+
+        Collections.sort(test,new mCompy());
+        NodeTree head2=new NodeTree(test,true).set_head2();
+        //System.out.println(head.x+" "+head.y);
+
+        ArrayList<NodeTree> test2=new ArrayList<>();
+        head2.f5(head2,2,7,test2);
+        System.out.println(test2.size());
+
+        for (int i=0;i<test2.size();i++){
+            System.out.println(test2.get(i).x+" "+test2.get(i).y);
+        }
+//
+//        ArrayList<NodeTree> test =head.findAllx(head,2,7);
+//
+//        System.out.println("find all x");
+//        for (int i=0;i<test.size();i++){
+//            System.out.println("     x:"+test.get(i).x+" y:"+test.get(i).y);
+//        }
+//        Collections.sort(test,new mCompy());
+//        NodeTree head2=new NodeTree(test).set_heady();
+//
+//        System.out.println("heady:"+head2.x+" "+head2.y);
+//        System.out.println(head2.children.size());
+//
+//        ArrayList<NodeTree> test2=head2.findAlly(head2,2,3);
+//
+//        for (int i=0;i<test2.size();i++){
+//            System.out.println("     x:"+test2.get(i).x+" y:"+test2.get(i).y);
+//        }
+
+
+    }
+}
+
+class NodeTree {
+    //filds
+    int x, y;
+    NodeTree r, l;
+    ArrayList<NodeTree> children=new ArrayList<NodeTree>();
+    ArrayList<NodeTree> childrenroot=new ArrayList<NodeTree>();
+
+    //constructors
+    NodeTree(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    NodeTree(NodeTree l) {
+        this.l = l;
+    }
+
+    NodeTree(ArrayList<NodeTree> children) {
+        this.children = children;
+    }
+
+    NodeTree(ArrayList<NodeTree> childrenroot,boolean cr) {this.childrenroot = childrenroot;}
+
+
+    //methods
+    NodeTree set_head() {
+        return make_tree(children).get(0);
+    }
+
+    ArrayList<NodeTree> make_tree(ArrayList<NodeTree> mlist) {
+        if (mlist.size() == 1) {
+            return mlist;
+        } else {
+            ArrayList<NodeTree> newlist = new ArrayList<>();
+            int newSize;
+            if (mlist.size() % 2 == 1) {
+                newSize = (mlist.size() / 2) + 1;
+            } else {
+                newSize = (mlist.size() / 2);
+            }
+            for (int i = 0; i < newSize; i++) {
+                newlist.add(new NodeTree(mlist.get(i * 2)));//add left child
+                newlist.get(i).children = new ArrayList<NodeTree>(mlist.get(i * 2).children);
+                try {
+                    newlist.get(i).r = mlist.get((2 * i) + 1);
+                    newlist.get(i).children.addAll(mlist.get((i * 2) + 1).children);
+                } catch (IndexOutOfBoundsException e) {
+//                    break;
+                }
+
+                NodeTree p = newlist.get(i).l;
+                while (p.r != null) {
+                    p = p.r;
+                }
+                newlist.get(i).x = p.x;
+                newlist.get(i).y = p.y;
+            }
+            return make_tree(newlist);
+        }
+    }
+
+    NodeTree set_head2() {
+        return make_tree2(childrenroot).get(0);
+    }
+
+    ArrayList<NodeTree> make_tree2(ArrayList<NodeTree> mlist) {
+        if (mlist.size() == 1) {
+            return mlist;
+        } else {
+            ArrayList<NodeTree> newlist = new ArrayList<>();
+            int newSize;
+            if (mlist.size() % 2 == 1) {
+                newSize = (mlist.size() / 2) + 1;
+            } else {
+                newSize = (mlist.size() / 2);
+            }
+            for (int i = 0; i < newSize; i++) {
+                newlist.add(new NodeTree(mlist.get(i * 2)));//add left child
+                newlist.get(i).childrenroot = new ArrayList<NodeTree>(mlist.get(i * 2).childrenroot);
+                try {
+                    newlist.get(i).r = mlist.get((2 * i) + 1);
+                    newlist.get(i).childrenroot.addAll(mlist.get((i * 2) + 1).childrenroot);
+                } catch (IndexOutOfBoundsException e) {
+//                    break;
+                }
+
+                NodeTree p = newlist.get(i).l;
+                while (p.r != null) {
+                    p = p.r;
+                }
+                newlist.get(i).x = p.x;
+                newlist.get(i).y = p.y;
+            }
+            return make_tree(newlist);
+        }
+    }
+
+    void f4(NodeTree p, int x1, int x2, ArrayList list){
+        try {
+            if (x1 <= p.l.x && p.x <= x2) {
+                if(!list.contains(p.l.r.children.get(0)))
+                    list.addAll(p.l.r.children);
+                f4(p.l, x1, x2, list);
+                f4(p.r, x1, x2, list);
+            } else if (x2 <= p.x) {
+                f4(p.l, x1, x2, list);
+            } else if (p.x < x1) {
+                if(!list.contains(p.r.children.get(0)))
+                f4(p.r, x1, x2, list);
+            }if (p.x==x1 && !list.contains(p))
+                list.add(p);
+
+        }catch (NullPointerException e){
+            if (p.x==x1 && !list.contains(p))
+                list.add(p);
+            }
+    }
+    void f5(NodeTree p, int y1, int y2, ArrayList list){
+        try {
+            if (y1 <= p.l.y && p.y <= y2) {
+                if(!list.contains(p.l.r.childrenroot.get(0)))
+                    list.addAll(p.l.r.childrenroot);
+                f5(p.l, y1, y2, list);
+                f5(p.r, y1, y2, list);
+            } else if (y2 <= p.y) {
+                f5(p.l, y1, y2, list);
+            } else if (p.y < y1) {
+                if(!list.contains(p.r.childrenroot.get(0)))
+                    f5(p.r, y1, y2, list);
+            }if (p.y==y1 && !list.contains(p))
+                list.add(p);
+
+        }catch (NullPointerException e){
+            if (p.y==y1 && !list.contains(p))
+                list.add(p);
+        }
+    }
+
+
+}
+class mCompx implements Comparator<NodeTree> {
+    @Override
+    public int compare(NodeTree o1, NodeTree o2) {
+        return o1.x-o2.x;
+    }
+}
+class mCompy implements Comparator<NodeTree>{
+    @Override
+    public int compare(NodeTree o1, NodeTree o2) {
+        return o1.y-o2.y;
+    }
+}
